@@ -45,10 +45,10 @@ public class RulesInspectionTest {
                 System.out.println(kiePackage.getRules().size() + " rule(s) found in package " + kiePackage.getName() + ":");
                 for (Rule rule : kiePackage.getRules()) {
                     inspectRule((RuleImpl) rule);
+                    System.out.println();
                 }
             }
         }
-        assertTrue(true);
     }
 
     /**
@@ -57,8 +57,12 @@ public class RulesInspectionTest {
      * @param rule
      */
     private void inspectRule(RuleImpl rule) {
-        System.out.println("\tName: " + rule.getName());
+        System.out.println("\tName: ");
+        System.out.println("\t\t" + rule.getName());
         System.out.println("\tDeclarations: ");
+        for (String s : rule.getDeclarations().keySet()) {
+            System.out.println("\t\t" + s + " [" + rule.getDeclaration(s).getBoxedTypeName() + "]");
+        }
         System.out.println("\tConstraints: ");
         for (RuleConditionElement ruleConditionElement : rule.getLhs().getChildren()) {
             for (Constraint constraint : ((Pattern) ruleConditionElement).getConstraints()) {

@@ -15,10 +15,10 @@ rule "Is adult"
         $user.setValid(true);
 end
 
-//rule "Password is long enough"
-//    no-loop
-//    when
-//        $user : UserEntity(password.length() > 5 && password.length() < 20)
-//    then
-//        $user.setValid(true);
-//end
+rule "Password is long enough"
+    no-loop
+    when
+        $user : UserEntity(password.length() > 5 && password.length() < 20)
+    then
+        $user.setValid(true);
+end
