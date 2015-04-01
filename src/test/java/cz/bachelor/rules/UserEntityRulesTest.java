@@ -20,7 +20,7 @@ public class UserEntityRulesTest {
         // KieSession creation
         KieServices kieServices = KieServices.Factory.get();
         KieContainer kieContainer = kieServices.getKieClasspathContainer();
-        kieSession = kieContainer.newStatelessKieSession();
+        kieSession = kieContainer.newStatelessKieSession("ksession1");
     }
 
     @Test
