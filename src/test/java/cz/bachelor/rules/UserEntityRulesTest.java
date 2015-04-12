@@ -25,6 +25,7 @@ public class UserEntityRulesTest {
 
     @Test
     public void testIsAdult() {
+        //toDo: should be testing only one specific rule
         UserEntity userEntity = new UserEntity();
         userEntity.setAge(11);
 
