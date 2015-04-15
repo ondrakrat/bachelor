@@ -1,4 +1,4 @@
-package cz.bachelor.metamodel.declaration;
+package cz.bachelor.metamodel;
 
 /**
  * Represents Drools variable delaration.

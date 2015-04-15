@@ -2,6 +2,9 @@ package cz.bachelor.metamodel;
 
 import cz.bachelor.metamodel.condition.Condition;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -12,8 +15,9 @@ public class Rule {
     private String name;
     private String pckg;
     // functions
-    // variables
-    private Set<Condition> conditions;
+    // toDo: value data type?
+    private Map<String, String> globals = new HashMap<>();
+    private Set<Condition> conditions = new HashSet<>();
 
     public String getName() {
         return name;
@@ -37,5 +41,13 @@ public class Rule {
 
     public void setConditions(Set<Condition> conditions) {
         this.conditions = conditions;
+    }
+
+    public Map<String, String> getGlobals() {
+        return globals;
+    }
+
+    public void setGlobals(Map<String, String> globals) {
+        this.globals = globals;
     }
 }

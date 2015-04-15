@@ -1,7 +1,8 @@
 package cz.bachelor.metamodel.condition;
 
-import cz.bachelor.metamodel.declaration.Declaration;
+import cz.bachelor.metamodel.Declaration;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -10,21 +11,9 @@ import java.util.Set;
  */
 public abstract class Condition {
 
-    private String condition;
-    private Set<Declaration> declarations;
-
-    /**
-     * Returns String representing the condition.
-     *
-     * @return
-     */
-    public String getCondition() {
-        return condition;
-    }
-
-    public void setCondition(String condition) {
-        this.condition = condition;
-    }
+    //toDo: implement visitor for parsing into JSON
+    
+    private Set<Declaration> declarations = new HashSet<>();
 
     /**
      * Get set of variables declared in this condition.

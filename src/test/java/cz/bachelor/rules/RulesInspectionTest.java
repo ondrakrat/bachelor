@@ -1,5 +1,6 @@
 package cz.bachelor.rules;
 
+import cz.bachelor.inspection.Inspector;
 import org.drools.core.base.ClassObjectType;
 import org.drools.core.base.mvel.MVELCompilationUnit;
 import org.drools.core.definitions.rule.impl.RuleImpl;
@@ -35,6 +36,7 @@ public class RulesInspectionTest {
         KieServices kieServices = KieServices.Factory.get();
         KieContainer kieContainer = kieServices.getKieClasspathContainer();
         kieSession = kieContainer.newStatelessKieSession("ksession1");
+        kieSession.setGlobal("status", "verified");
     }
 
     @Test
