@@ -1,16 +1,15 @@
 package cz.bachelor.rules;
 
 import cz.bachelor.inspection.Inspector;
-import org.drools.core.base.ClassObjectType;
 import org.drools.core.base.mvel.MVELCompilationUnit;
 import org.drools.core.definitions.rule.impl.RuleImpl;
-import org.drools.core.rule.Declaration;
 import org.drools.core.rule.Pattern;
 import org.drools.core.rule.RuleConditionElement;
 import org.drools.core.rule.constraint.MvelConstraint;
 import org.drools.core.spi.Constraint;
 import org.junit.Before;
 import org.junit.Test;
+import org.kie.api.KieBase;
 import org.kie.api.KieServices;
 import org.kie.api.definition.KiePackage;
 import org.kie.api.definition.rule.Rule;
@@ -20,8 +19,7 @@ import org.kie.api.runtime.StatelessKieSession;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
-
-import static org.junit.Assert.*;
+import java.util.Set;
 
 /**
  * Rules model inspection test.
@@ -35,7 +33,8 @@ public class RulesInspectionTest {
         // KieSession creation
         KieServices kieServices = KieServices.Factory.get();
         KieContainer kieContainer = kieServices.getKieClasspathContainer();
-        kieSession = kieContainer.newStatelessKieSession("ksession1");
+        // Specific session will be created here
+        kieSession = kieContainer.newStatelessKieSession("usersession");
         kieSession.setGlobal("status", "verified");
     }
 
@@ -54,9 +53,20 @@ public class RulesInspectionTest {
     }
 
     /**
+     * Tests functionality of {@link Inspector#inspectBase(KieBase)}
+     */
+    @Test
+    public void testInspectRule() {
+        Inspector inspector = new Inspector();
+        Map<String, Set<cz.bachelor.metamodel.Rule>> rules = inspector.inspectBase(kieSession.getKieBase());
+    }
+
+    /**
      * Prints rule content specified in Drools
      *
-     * @param rule
+     * @param rule rule to be inspected
+     * @deprecated Not type safe, works only for {@link Pattern} type rules. Use {@link cz.bachelor.inspection.Inspector}
+     * instead
      */
     private void inspectRule(RuleImpl rule) {
         System.out.println("\tName: ");
@@ -69,8 +79,8 @@ public class RulesInspectionTest {
         for (RuleConditionElement ruleConditionElement : rule.getLhs().getChildren()) {
             for (Constraint constraint : ((Pattern) ruleConditionElement).getConstraints()) {
                 //toDo: use reflection to get class name instead of toString
-                System.out.println("\t\t" + "Object type: " + ((Pattern)ruleConditionElement).getObjectType());
-                System.out.println("\t\t" + ((MvelConstraint)constraint).getExpression());
+                System.out.println("\t\t" + "Object type: " + ((Pattern) ruleConditionElement).getObjectType());
+                System.out.println("\t\t" + ((MvelConstraint) constraint).getExpression());
             }
         }
         if (rule.getConsequence() != null) {
