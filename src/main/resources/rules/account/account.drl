@@ -1,6 +1,7 @@
-package cz.bachelor.rules.cz.account
+package cz.bachelor.rules.account
 
 import cz.bachelor.entity.Account
+import cz.bachelor.entity.Person
 
 import function cz.bachelor.functions.GeneralFunctions.isNull
 
@@ -10,7 +11,7 @@ dialect "mvel"
 // be satisfied to the entity be valid in general use-case
 rule "[Account] Validation"
     when
-        Account(!isNull(owner), yearOfCreation >= 1970, yearOfCreation < 2100 )
+        Account(!isNull(owner), yearOfCreation >= 1970, yearOfCreation < 2100)
     then
 end
 
@@ -47,5 +48,11 @@ rule "[Account] Deprecated Accounts"
     then
 end
 
-
-
+// Example 5.52. Return Value Restriction
+rule "[Person] Male age by two years than some woman"
+    ruleflow-group "single rules"
+    when
+        Person( $girlAge : age, sex == "F" )
+        Person( age == ( $girlAge + 2), sex == 'M' )
+    then
+end

@@ -6,9 +6,18 @@ package cz.bachelor.metamodel;
 public class Declaration {
 
     private String name;
-    // toDo: consider interface and implementations; will we have that many types?
-    private Object value;
 
+    private String entity;
+
+    private String field;
+
+    private String type;
+
+    /**
+     * Get name of the variable
+     *
+     * @return
+     */
     public String getName() {
         return name;
     }
@@ -17,11 +26,44 @@ public class Declaration {
         this.name = name;
     }
 
-    public Object getValue() {
-        return value;
+    /**
+     * Get name of entity, where the field is declared (null if the variable is not a field
+     * of an entity)
+     *
+     * @return
+     */
+    public String getEntity() {
+        return entity;
     }
 
-    public void setValue(Object value) {
-        this.value = value;
+    public void setEntity(String entity) {
+        this.entity = entity;
+    }
+
+    /**
+     * Get name of the field from which the value of this variable is taken (null if the variable is not a field
+     * of an entity)
+     *
+     * @return
+     */
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
+    }
+
+    /**
+     * Data type of the variable
+     *
+     * @return
+     */
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

@@ -12,19 +12,5 @@ import java.util.Set;
 public abstract class Condition {
 
     //toDo: implement visitor for parsing into JSON
-    
-    private Set<Declaration> declarations = new HashSet<>();
 
-    /**
-     * Get set of variables declared in this condition.
-     *
-     * @return
-     */
-    public Set<Declaration> getDeclarations() {
-        return declarations;
-    }
-
-    public void setDeclarations(Set<Declaration> declarations) {
-        this.declarations = declarations;
-    }
 }

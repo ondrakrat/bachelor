@@ -5,7 +5,6 @@ package cz.bachelor.metamodel.condition;
  */
 public class Eval extends Condition {
 
-    // toDo: Always only one constraint?
     private String constraint;
 
     public String getConstraint() {

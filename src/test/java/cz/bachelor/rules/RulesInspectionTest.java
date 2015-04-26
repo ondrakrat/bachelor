@@ -59,6 +59,7 @@ public class RulesInspectionTest {
     public void testInspectRule() {
         Inspector inspector = new Inspector();
         Map<String, Set<cz.bachelor.metamodel.Rule>> rules = inspector.inspectBase(kieSession.getKieBase());
+        // toDo: add some asserts
     }
 
     /**

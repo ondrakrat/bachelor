@@ -15,11 +15,10 @@ public class Rule {
     private String name;
     private String pckg;
     private Set<String> functions = new HashSet<>();
-    // toDo: value data type?
-    private Map<String, String> globals = new HashMap<>();
+    private Map<String, Declaration> globals = new HashMap<>();
     // toDo: replace with Group in root
     private Set<Condition> conditions = new HashSet<>();
-    // declarations
+    private Map<String, Declaration> declarations = new HashMap<>();
 
     public String getName() {
         return name;
@@ -45,11 +44,11 @@ public class Rule {
         this.conditions = conditions;
     }
 
-    public Map<String, String> getGlobals() {
+    public Map<String, Declaration> getGlobals() {
         return globals;
     }
 
-    public void setGlobals(Map<String, String> globals) {
+    public void setGlobals(Map<String, Declaration> globals) {
         this.globals = globals;
     }
 
@@ -59,5 +58,13 @@ public class Rule {
 
     public void setFunctions(Set<String> functions) {
         this.functions = functions;
+    }
+
+    public Map<String, Declaration> getDeclarations() {
+        return declarations;
+    }
+
+    public void setDeclarations(Map<String, Declaration> declarations) {
+        this.declarations = declarations;
     }
 }

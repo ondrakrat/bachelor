@@ -1,6 +1,6 @@
 package cz.bachelor.inspection;
 
-import cz.bachelor.metamodel.Rule;
+import cz.bachelor.metamodel.*;
 import cz.bachelor.metamodel.condition.Condition;
 import cz.bachelor.metamodel.condition.Eval;
 import cz.bachelor.metamodel.condition.Group;
@@ -10,12 +10,11 @@ import org.drools.compiler.rule.builder.MVELConstraintBuilder;
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.definitions.rule.impl.RuleImpl;
 import org.drools.core.impl.KnowledgeBaseImpl;
-import org.drools.core.rule.EvalCondition;
-import org.drools.core.rule.Function;
-import org.drools.core.rule.GroupElement;
-import org.drools.core.rule.RuleConditionElement;
+import org.drools.core.rule.*;
+import org.drools.core.rule.Declaration;
 import org.drools.core.rule.constraint.MvelConstraint;
 import org.drools.core.spi.Constraint;
+import org.drools.core.spi.InternalReadAccessor;
 import org.kie.api.KieBase;
 import org.kie.api.KieServices;
 import org.kie.api.definition.KiePackage;
@@ -42,6 +41,7 @@ public class Inspector {
         Rule rule = new Rule();
         rule.setName(droolsRule.getName());
         rule.setPckg(droolsRule.getPackageName());
+
         // set globals and functions
 //        KieServices.Factory.get().getKieClasspathContainer().getKieBase("userbase");
         try {
@@ -53,7 +53,10 @@ public class Inspector {
                 InternalKnowledgePackage knowledgePackage = base.getPackage(droolsRule.getPackageName());
                 if (knowledgePackage != null) {
                     for (Map.Entry<String, String> entry : knowledgePackage.getGlobals().entrySet()) {
-                        rule.getGlobals().put(entry.getKey(), entry.getValue());
+                        cz.bachelor.metamodel.Declaration declaration = new cz.bachelor.metamodel.Declaration();
+                        declaration.setName(entry.getKey());
+                        declaration.setType(entry.getValue());
+                        rule.getGlobals().put(entry.getKey(), declaration);
                     }
                     for (Function function : knowledgePackage.getFunctions().values()) {
                         // toDo: test functionality
@@ -66,6 +69,8 @@ public class Inspector {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+
+        // create Conditions
         for (RuleConditionElement conditionElement : droolsRule.getLhs().getChildren()) {
             //toDo: create a factory for this
             Condition condition;
@@ -89,7 +94,28 @@ public class Inspector {
                         conditionElement.getClass().getName());
             }
             rule.getConditions().add(condition);
-            //toDo: declarations - in rules, conditions, or both?
+
+            // add declarations
+            for (Declaration declaration : droolsRule.getDeclarations().values()) {
+                cz.bachelor.metamodel.Declaration varDeclaration = new cz.bachelor.metamodel.Declaration();
+                varDeclaration.setName(declaration.getIdentifier());
+                varDeclaration.setType(declaration.getTypeName());
+                try {
+                    InternalReadAccessor extractor = declaration.getExtractor();
+                    Field className = extractor.getClass().getDeclaredField("className");
+                    className.setAccessible(true);
+                    varDeclaration.setEntity((String) className.get(extractor));
+                    Field fieldName = extractor.getClass().getDeclaredField("fieldName");
+                    fieldName.setAccessible(true);
+                    varDeclaration.setField((String)fieldName.get(extractor));
+                } catch (NoSuchFieldException e) {
+                    // if the declaration is not a field of an entity, null will be left as a value for "entity"
+                    // and "field", which is ok, so this exception can be ignored
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                rule.getDeclarations().put(declaration.getIdentifier(), varDeclaration);
+            }
         }
         return rule;
     }
