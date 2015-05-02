@@ -67,4 +67,19 @@ public class Rule {
     public void setDeclarations(Map<String, Declaration> declarations) {
         this.declarations = declarations;
     }
+
+    /**
+     * Returns the type of a declared variable (either local, or global), or null if the variable does not exist.
+     *
+     * @param name variable name
+     * @return variable value, or null of it does not exist
+     */
+    public String getVariableType(String name) {
+        // toDo: if there is variable, that is declared both as global and local, do what? Do Drools validate this?
+        if (declarations.containsKey(name)) {
+            return declarations.get(name).getType();
+        } else {
+            return globals.containsKey(name) ? globals.get(name).getType() : null;
+        }
+    }
 }

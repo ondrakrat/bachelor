@@ -9,8 +9,6 @@ import java.util.Set;
 public class Pattern extends Condition {
 
     private Set<String> constraints = new HashSet<>();
-    //toDo: declarations - common with the ones from Condition, or separate ones?
-
 
     /**
      * Returns a group of constraints for this condition.

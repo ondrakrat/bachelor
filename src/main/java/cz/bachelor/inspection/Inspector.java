@@ -42,7 +42,7 @@ public class Inspector {
         rule.setName(droolsRule.getName());
         rule.setPckg(droolsRule.getPackageName());
 
-        // set globals and functions
+        // set Globals and Functions
 //        KieServices.Factory.get().getKieClasspathContainer().getKieBase("userbase");
         try {
             KieContainer kieContainer = KieServices.Factory.get().getKieClasspathContainer();
@@ -84,8 +84,6 @@ public class Inspector {
                                 constraint.getClass().getName());
                     }
                 }
-            } else if (conditionElement instanceof GroupElement) {
-                condition = new Group();
             } else if (conditionElement instanceof EvalCondition) {
                 condition = new Eval();
                 ((Eval) condition).setConstraint(((EvalCondition) conditionElement).getEvalExpression().toString());
@@ -95,7 +93,7 @@ public class Inspector {
             }
             rule.getConditions().add(condition);
 
-            // add declarations
+            // add Declarations
             for (Declaration declaration : droolsRule.getDeclarations().values()) {
                 cz.bachelor.metamodel.Declaration varDeclaration = new cz.bachelor.metamodel.Declaration();
                 varDeclaration.setName(declaration.getIdentifier());
@@ -112,6 +110,7 @@ public class Inspector {
                     // if the declaration is not a field of an entity, null will be left as a value for "entity"
                     // and "field", which is ok, so this exception can be ignored
                 } catch (IllegalAccessException e) {
+                    // should not be ever encountered, both fields are #setAccessible(true)
                     e.printStackTrace();
                 }
                 rule.getDeclarations().put(declaration.getIdentifier(), varDeclaration);
@@ -156,4 +155,59 @@ public class Inspector {
         }
         return rulesMap;
     }
+
+//    /**
+//     * Creates a {@link Condition} from given Drools {@link ConditionalElement} object. If the condition contains
+//     * logical grouping elements, groups them into {@link Group}.
+//     *
+//     * @param conditionElement
+//     * @return
+//     */
+//    private Condition createCondition(RuleConditionElement conditionElement) {
+//        Condition condition;
+//        if (conditionElement instanceof org.drools.core.rule.Pattern) {
+//            condition = new Pattern();
+//            for (Constraint constraint : ((org.drools.core.rule.Pattern) conditionElement).getConstraints()) {
+//                if (constraint instanceof MvelConstraint) {
+//                    ((Pattern) condition).getConstraints().add(((MvelConstraint) constraint).getExpression());
+//                } else {
+//                    throw new IllegalArgumentException("Constraint type not supported: " +
+//                            constraint.getClass().getName());
+//                }
+//            }
+//        } else if (conditionElement instanceof EvalCondition) {
+//            condition = new Eval();
+//            ((Eval) condition).setConstraint(((EvalCondition) conditionElement).getEvalExpression().toString());
+//        } else {
+//            throw new IllegalArgumentException("Condition class not supported: " +
+//                    conditionElement.getClass().getName());
+//        }
+//    }
+//
+//    /**
+//     * Creates a {@link Group} condition if given constraint contains logical operators "&&", "||", or ",";
+//     *
+//     * @param constraint
+//     * @return
+//     */
+//    private Condition createGroupCondition(Constraint constraint) {
+//        if (constraint instanceof MvelConstraint) {
+//            String expression = ((MvelConstraint) constraint).getExpression();
+//            Group group = new Group();
+//            if (expression.contains("||")) {
+//
+//            } else if (expression.contains("&&")) {
+//
+//            } else if (expression.contains(",")) {
+//
+//            } else {
+//                Pattern pattern = new Pattern();
+//                pattern.getConstraints().add(expression);
+//                return pattern;
+//            }
+//        } else {
+//            throw new IllegalArgumentException("Constraint type not supported: " +
+//                    constraint.getClass().getName());
+//        }
+//    }
 }
