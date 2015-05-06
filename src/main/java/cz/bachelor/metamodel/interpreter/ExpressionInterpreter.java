@@ -35,36 +35,52 @@ public class ExpressionInterpreter {
                     }
                     break;
                 case ')':
-                    --bracketCount;
-                    break;
-                case '&':
-                    if (bracketCount == 0 && previous == '&') {
-                        stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i - 1).trim()), negated));
+                    if (--bracketCount == 0) {
+                        stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i).trim()), negated));
                         negated = false;
+                        conditionStartPos = i + 1;
                         if (currentOperator != null) {
                             stack.push(new ExpressionOperator(currentOperator));
+                            currentOperator = null;
                         }
-                        currentOperator = Group.Operator.AND;
-                        conditionStartPos = i + 1;
-                    } else if (bracketCount == 0) {
-                        previous = '&';
+                    }
+                    break;
+                case '&':
+                    if (bracketCount == 0) {
+                        if (previous == '&') {
+                            if (i - 1 >= conditionStartPos && expression.substring(conditionStartPos, i - 1).trim().length() > 0) {
+                                stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i - 1).trim()), negated));
+                                negated = false;
+                                conditionStartPos = i + 1;
+                            }
+                            if (currentOperator != null) {
+                                stack.push(new ExpressionOperator(currentOperator));
+                            }
+                            currentOperator = Group.Operator.AND;
+                        } else {
+                            previous = '&';
+                        }
                     }
                     break;
                 case '|':
-                    if (bracketCount == 0 && previous == '|') {
-                        stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i - 1).trim()), negated));
-                        negated = false;
-                        if (currentOperator != null) {
-                            stack.push(new ExpressionOperator(currentOperator));
+                    if (bracketCount == 0) {
+                        if (previous == '|') {
+                            if (i - 1 >= conditionStartPos && expression.substring(conditionStartPos, i - 1).trim().length() > 0) {
+                                stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i - 1).trim()), negated));
+                                negated = false;
+                                conditionStartPos = i + 1;
+                            }
+                            if (currentOperator != null) {
+                                stack.push(new ExpressionOperator(currentOperator));
+                            }
+                            currentOperator = Group.Operator.OR;
+                        } else {
+                            previous = '|';
                         }
-                        currentOperator = Group.Operator.OR;
-                        conditionStartPos = i + 1;
-                    } else if (bracketCount == 0) {
-                        previous = '|';
                     }
                     break;
                 case ',':
-                    if (bracketCount == 0) {
+                    if (bracketCount == 0 && i - 1 >= conditionStartPos && expression.substring(conditionStartPos, i - 1).trim().length() > 0) {
                         stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i).trim()), negated));
                         negated = false;
                         if (currentOperator != null) {
@@ -75,7 +91,9 @@ public class ExpressionInterpreter {
                     }
                     break;
                 case '!':
-                    negated = !negated;
+                    if (bracketCount == 0) {
+                        negated = !negated;
+                    }
                     break;
                 default:
                     break;
@@ -83,21 +101,21 @@ public class ExpressionInterpreter {
         }
 
         // the first opening bracket is omitted (if it was present), so the last one should be omitted as well
-        String expressionSubstring = expression.substring(conditionStartPos, expression.endsWith(")") ? expression.length() - 1 : expression.length()).trim();
-        // is the condition simple (i. e. does not contain grouping operators)
-        if (expressionSubstring.split("[&|,]").length <= 1) {
-            Pattern pattern = new Pattern();
-            pattern.getConstraints().add(expressionSubstring);
-            stack.push(new ExpressionCondition(pattern, negated));
-        } else {
-            stack.push(new ExpressionCondition(interpret(expressionSubstring), negated));
+        if (conditionStartPos < expression.length()) {
+            String expressionSubstring = expression.substring(conditionStartPos, expression.endsWith(")") ? expression.length() - 1 : expression.length()).trim().replaceAll("!", "");
+            // is the condition simple (i. e. does not contain grouping operators)
+            if (expressionSubstring.split("[&|,]").length <= 1) {
+                Pattern pattern = new Pattern();
+                pattern.getConstraints().add(expressionSubstring);
+                stack.push(new ExpressionCondition(pattern, negated));
+            } else {
+                stack.push(new ExpressionCondition(interpret(expressionSubstring), negated));
+            }
         }
         if (currentOperator != null) {
             stack.push(new ExpressionOperator(currentOperator));
         }
-
-        Condition condition = interpretStack(stack);
-        return condition;
+        return interpretStack(stack);
     }
 
 
@@ -130,10 +148,10 @@ public class ExpressionInterpreter {
     private Group handleOperator(Stack<ExpressionElement> stack, ExpressionOperator operator) {
         ExpressionElement top = stack.pop();
         Condition right = top.getType() == ElementType.CONDITION ? ((ExpressionCondition) top).getCondition() :
-                handleOperator(stack, (ExpressionOperator)top);
+                handleOperator(stack, (ExpressionOperator) top);
         top = stack.pop();
         Condition left = top.getType() == ElementType.CONDITION ? ((ExpressionCondition) top).getCondition() :
-                handleOperator(stack, (ExpressionOperator)top);
+                handleOperator(stack, (ExpressionOperator) top);
         return new Group(left, right, operator.getOperator());
     }
 

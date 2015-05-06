@@ -8,11 +8,10 @@ import cz.bachelor.metamodel.condition.Condition;
 public class ExpressionCondition implements ExpressionElement {
 
     private Condition condition;
-    private boolean negated = false;
 
     public ExpressionCondition(Condition condition, boolean negated) {
         this.condition = condition;
-        this.negated = negated;
+        condition.setNegated(condition.isNegated() ^ negated);  // XOR
     }
 
     @Override
@@ -26,13 +25,5 @@ public class ExpressionCondition implements ExpressionElement {
 
     public void setCondition(Condition condition) {
         this.condition = condition;
-    }
-
-    public boolean isNegated() {
-        return negated;
-    }
-
-    public void setNegated(boolean negated) {
-        this.negated = negated;
     }
 }

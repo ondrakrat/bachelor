@@ -12,7 +12,7 @@ public class ExpressionInterpreterTest {
     @Test
     public void testInterpret() {
         ExpressionInterpreter interpreter = new ExpressionInterpreter();
-        String expression = "age > 18 || pl > 4 && pl < 20, pl > 10";
+        String expression = "!(A      ||!  (!D  ))||           (E)";
         Condition condition = interpreter.interpret(expression);
         System.out.println("ExpressionInterpreterTest#testInterpret() ended successfully.");
     }

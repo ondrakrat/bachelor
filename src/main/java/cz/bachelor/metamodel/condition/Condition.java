@@ -1,10 +1,5 @@
 package cz.bachelor.metamodel.condition;
 
-import cz.bachelor.metamodel.Declaration;
-
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Abstract implementation of one condition of a business rule. A business rule may have one or more conditions,
  * that can be connected with logical operators.
@@ -12,5 +7,13 @@ import java.util.Set;
 public abstract class Condition {
 
     //toDo: implement visitor for parsing into JSON
+    boolean negated = false;
 
+    public boolean isNegated() {
+        return negated;
+    }
+
+    public void setNegated(boolean negated) {
+        this.negated = negated;
+    }
 }
