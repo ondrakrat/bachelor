@@ -7,6 +7,10 @@ public class Eval extends Condition {
 
     private String constraint;
 
+    public Eval(String constraint) {
+        this.constraint = constraint;
+    }
+
     public String getConstraint() {
         return constraint;
     }

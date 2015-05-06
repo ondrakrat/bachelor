@@ -1,4 +1,4 @@
-package cz.bachelor.metamodel.interpreter;
+package cz.bachelor.inspection.interpreter;
 
 /**
  * Thrown when unexpected element is encountered in stack (e. g. two {@link ExpressionCondition}s do not follow

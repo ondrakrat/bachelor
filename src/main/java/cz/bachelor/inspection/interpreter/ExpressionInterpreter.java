@@ -1,6 +1,7 @@
-package cz.bachelor.metamodel.interpreter;
+package cz.bachelor.inspection.interpreter;
 
 import cz.bachelor.metamodel.condition.Condition;
+import cz.bachelor.metamodel.condition.Eval;
 import cz.bachelor.metamodel.condition.Group;
 import cz.bachelor.metamodel.condition.Pattern;
 
@@ -24,29 +25,37 @@ public class ExpressionInterpreter {
         Group.Operator currentOperator = null;
         char previous = 0;  // previous char, used for validating doubled logical operators
         boolean negated = false;   // the next condition should be negated, i. e. is preceded by "!"
+        boolean methodCall = false; // currently within method parameter brackets
         Stack<ExpressionElement> stack = new Stack<>(); // stack for prefix notation parsing
 
         for (int i = 0; i < expression.length(); ++i) {
             // top level conditions are created in this layer, nested ones are build recursively
             switch (expression.charAt(i)) {
                 case '(':
-                    if (bracketCount++ == 0) {
+                    // test if the opening bracket indicates a method call (i. e. previous character ignoring whitespace
+                    // is a letter)
+                    methodCall = expression.substring(0, i).replaceAll(" ", "").matches(".*[a-zA-Z]*$");
+                    if (bracketCount++ == 0 && !methodCall) {
                         conditionStartPos = i + 1;  // should be safe, Drools should validate this before compilation
                     }
                     break;
                 case ')':
                     if (--bracketCount == 0) {
-                        stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i).trim()), negated));
-                        negated = false;
-                        conditionStartPos = i + 1;
-                        if (currentOperator != null) {
-                            stack.push(new ExpressionOperator(currentOperator));
-                            currentOperator = null;
+                        if (!methodCall) {
+                            stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i).trim()), negated));
+                            negated = false;
+                            conditionStartPos = i + 1;
+                            if (currentOperator != null) {
+                                stack.push(new ExpressionOperator(currentOperator));
+                                currentOperator = null;
+                            }
+                        } else {
+                            methodCall = false;
                         }
                     }
                     break;
                 case '&':
-                    if (bracketCount == 0) {
+                    if (!methodCall && bracketCount == 0) {
                         if (previous == '&') {
                             if (i - 1 >= conditionStartPos && expression.substring(conditionStartPos, i - 1).trim().length() > 0) {
                                 stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i - 1).trim()), negated));
@@ -63,7 +72,7 @@ public class ExpressionInterpreter {
                     }
                     break;
                 case '|':
-                    if (bracketCount == 0) {
+                    if (!methodCall && bracketCount == 0) {
                         if (previous == '|') {
                             if (i - 1 >= conditionStartPos && expression.substring(conditionStartPos, i - 1).trim().length() > 0) {
                                 stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i - 1).trim()), negated));
@@ -80,7 +89,7 @@ public class ExpressionInterpreter {
                     }
                     break;
                 case ',':
-                    if (bracketCount == 0 && i - 1 >= conditionStartPos && expression.substring(conditionStartPos, i - 1).trim().length() > 0) {
+                    if (!methodCall && bracketCount == 0 && i - 1 >= conditionStartPos && expression.substring(conditionStartPos, i - 1).trim().length() > 0) {
                         stack.push(new ExpressionCondition(interpret(expression.substring(conditionStartPos, i).trim()), negated));
                         negated = false;
                         if (currentOperator != null) {
@@ -91,7 +100,7 @@ public class ExpressionInterpreter {
                     }
                     break;
                 case '!':
-                    if (bracketCount == 0) {
+                    if (!methodCall && bracketCount == 0) {
                         negated = !negated;
                     }
                     break;
@@ -102,12 +111,12 @@ public class ExpressionInterpreter {
 
         // the first opening bracket is omitted (if it was present), so the last one should be omitted as well
         if (conditionStartPos < expression.length()) {
-            String expressionSubstring = expression.substring(conditionStartPos, expression.endsWith(")") ? expression.length() - 1 : expression.length()).trim().replaceAll("!", "");
+            String expressionSubstring = expression.substring(conditionStartPos,
+                    expression.endsWith(")") && !areBracketsEven(expression) ? expression.length() - 1 : expression.length()).trim().replaceAll("!", "");
             // is the condition simple (i. e. does not contain grouping operators)
             if (expressionSubstring.split("[&|,]").length <= 1) {
-                Pattern pattern = new Pattern();
-                pattern.getConstraints().add(expressionSubstring);
-                stack.push(new ExpressionCondition(pattern, negated));
+                Eval eval = new Eval(expressionSubstring);
+                stack.push(new ExpressionCondition(eval, negated));
             } else {
                 stack.push(new ExpressionCondition(interpret(expressionSubstring), negated));
             }
@@ -156,27 +165,23 @@ public class ExpressionInterpreter {
     }
 
     /**
-     * Prints the content of the stack on standard output. Mostly for debug purposes.
+     * Returns true, if the amount of opening and closing brackets within given string is equal
      *
-     * @param stack
+     * @param s
+     * @return
      */
-    private void printStack(Stack<ExpressionElement> stack) {
-        int depth = 0;
-        System.out.println("*** STACK BEGINNING ***");
-        while (!stack.empty()) {
-            System.out.print(depth++ + ") ");
-            ExpressionElement element = stack.pop();
-            if (element.getType() == ElementType.OPERATOR) {
-                System.out.println("OPERATOR");
-                System.out.println("\t" + ((ExpressionOperator) element).getOperator());
-                ;
-            } else {
-                System.out.println("CONSTRAINT:");
-                for (String constraint : ((Pattern) ((ExpressionCondition) element).getCondition()).getConstraints()) {
-                    System.out.println("\t" + constraint);
-                }
+    private boolean areBracketsEven(String s) {
+        int opening = 0,closing = 0;
+        for (int i = 0; i < s.length(); ++i) {
+            switch (s.charAt(i)) {
+                case '(':
+                    ++opening;
+                    break;
+                case ')':
+                    ++closing;
+                    break;
             }
         }
-        System.out.println("*** STACK END ***\n");
+        return opening == closing;
     }
 }

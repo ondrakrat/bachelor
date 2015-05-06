@@ -34,7 +34,7 @@ public class RulesInspectionTest {
         KieServices kieServices = KieServices.Factory.get();
         KieContainer kieContainer = kieServices.getKieClasspathContainer();
         // Specific session will be created here
-        kieSession = kieContainer.newStatelessKieSession("usersession");
+        kieSession = kieContainer.newStatelessKieSession("accountsession");
         kieSession.setGlobal("status", "verified");
     }
 

@@ -1,4 +1,4 @@
-package cz.bachelor.metamodel.interpreter;
+package cz.bachelor.inspection.interpreter;
 
 import cz.bachelor.metamodel.condition.Condition;
 

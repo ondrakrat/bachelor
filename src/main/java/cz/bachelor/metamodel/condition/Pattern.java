@@ -8,18 +8,18 @@ import java.util.Set;
  */
 public class Pattern extends Condition {
 
-    private Set<String> constraints = new HashSet<>();
+    private Set<Condition> constraints = new HashSet<>();
 
     /**
      * Returns a group of constraints for this condition.
      *
      * @return
      */
-    public Set<String> getConstraints() {
+    public Set<Condition> getConstraints() {
         return constraints;
     }
 
-    public void setConstraints(Set<String> constraints) {
+    public void setConstraints(Set<Condition> constraints) {
         this.constraints = constraints;
     }
 }

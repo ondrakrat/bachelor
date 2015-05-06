@@ -3,10 +3,8 @@ package cz.bachelor.inspection;
 import cz.bachelor.metamodel.*;
 import cz.bachelor.metamodel.condition.Condition;
 import cz.bachelor.metamodel.condition.Eval;
-import cz.bachelor.metamodel.condition.Group;
 import cz.bachelor.metamodel.condition.Pattern;
-import org.drools.compiler.kie.builder.impl.KieContainerImpl;
-import org.drools.compiler.rule.builder.MVELConstraintBuilder;
+import cz.bachelor.inspection.interpreter.ExpressionInterpreter;
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.definitions.rule.impl.RuleImpl;
 import org.drools.core.impl.KnowledgeBaseImpl;
@@ -71,27 +69,31 @@ public class Inspector {
         }
 
         // create Conditions
+        ExpressionInterpreter interpreter = new ExpressionInterpreter();
         for (RuleConditionElement conditionElement : droolsRule.getLhs().getChildren()) {
             //toDo: create a factory for this
-            Condition condition;
+            Condition condition = null;
             if (conditionElement instanceof org.drools.core.rule.Pattern) {
-                condition = new Pattern();
-                for (Constraint constraint : ((org.drools.core.rule.Pattern) conditionElement).getConstraints()) {
-                    if (constraint instanceof MvelConstraint) {
-                        ((Pattern) condition).getConstraints().add(((MvelConstraint) constraint).getExpression());
-                    } else {
-                        throw new IllegalArgumentException("Constraint type not supported: " +
-                                constraint.getClass().getName());
+                if (((org.drools.core.rule.Pattern) conditionElement).getConstraints().size() > 0) {
+                    condition = new Pattern();
+                    for (Constraint constraint : ((org.drools.core.rule.Pattern) conditionElement).getConstraints()) {
+                        if (constraint instanceof MvelConstraint) {
+                            ((Pattern) condition).getConstraints().add(interpreter.interpret(((MvelConstraint) constraint).getExpression()));
+                        } else {
+                            throw new IllegalArgumentException("Constraint type not supported: " +
+                                    constraint.getClass().getName());
+                        }
                     }
                 }
             } else if (conditionElement instanceof EvalCondition) {
-                condition = new Eval();
-                ((Eval) condition).setConstraint(((EvalCondition) conditionElement).getEvalExpression().toString());
+                condition = new Eval(((EvalCondition) conditionElement).getEvalExpression().toString());
             } else {
                 throw new IllegalArgumentException("Condition class not supported: " +
                         conditionElement.getClass().getName());
             }
-            rule.getConditions().add(condition);
+            if (condition != null) {
+                rule.getConditions().add(condition);
+            }
 
             // add Declarations
             for (Declaration declaration : droolsRule.getDeclarations().values()) {
@@ -105,7 +107,7 @@ public class Inspector {
                     varDeclaration.setEntity((String) className.get(extractor));
                     Field fieldName = extractor.getClass().getDeclaredField("fieldName");
                     fieldName.setAccessible(true);
-                    varDeclaration.setField((String)fieldName.get(extractor));
+                    varDeclaration.setField((String) fieldName.get(extractor));
                 } catch (NoSuchFieldException e) {
                     // if the declaration is not a field of an entity, null will be left as a value for "entity"
                     // and "field", which is ok, so this exception can be ignored
